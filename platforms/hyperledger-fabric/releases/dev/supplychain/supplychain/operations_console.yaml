@@ -1,0 +1,43 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: supplychain-operations-console
+  namespace: supplychain-net
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  interval: 1m
+  releaseName: supplychain-operations-console
+  chart:
+    spec:
+      interval: 1m
+      sourceRef:
+        kind: GitRepository
+        name: flux-local
+        namespace: flux-local
+      chart: platforms/hyperledger-fabric/charts/operations_console
+  values:
+    metadata:
+      namespace: supplychain-net
+      images:
+        couchdb: couchdb:3.1.1
+        console: ghcr.io/hyperledger-labs/fabric-console:latest
+        configtxlator: hyperledger/fabric-tools:2.2.3
+    storage:
+      couchdb:
+        storageclassname: supplychainsc
+        storagesize: 512Mi
+    service:
+      name: supplychainconsole
+      default_consortium: SupplyChainConsortium
+      serviceaccountname: default
+      imagesecretname: regcred
+      servicetype: ClusterIP
+      ports:
+        console:
+          clusteripport: 3000
+        couchdb:
+          clusteripport: 5984
+    proxy:    
+      provider: "none"
+      external_url_suffix: upgrade.upgrade.com
